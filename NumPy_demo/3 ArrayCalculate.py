@@ -17,19 +17,18 @@ print("# 计算各元素的平方根sqrt(arr)\n也可以用（arr**0.5）\n", np
 print("# 计算各元素指数exp(arr);  \nabs  #绝对值;\n", exp(arr))
 print("add(arr,arr) #两数组中对应元素相加;  \nsubtract # 相减;  \nmultiply # 相乘;  \ndivide # 相除;\n", np.add(arr, arr))
 
+arr2 = np.eye(3)+np.ones((3, 3))
+arr2[2, 1] = 0
+print("##################################################################")
 print("# 维度约归也是一种常用的矢量化方法")
 print('''
 # 通过数组上的一组数学函数对整个数组或某个轴向的数据进行统计计算。
 # sum、mean以及标准差std等聚合计算
 # 既可以当做数组的实例方法调用，也可以当做顶级NumPy函数使用：
 ''')
-
-arr2 = np.eye(3)+np.ones((3, 3))
-arr2[2, 1] = 0
-print("##################################################################")
 print("求和和平均")
 print("mean()方法是默认求所有元素的平均值", arr2.mean())
-print("sum()方法默认求返回对应轴的和的list\n", arr2.sum())
+print("sum()方法默认求返回对应轴的和", arr2.sum())
 print("# axis参数是轴的标号，sum()计算该轴上的统计值（0为列，1为行）\n", arr2.sum(axis=1))
 print('# 也可以对mean()使用', arr2.mean(axis=1))
 
