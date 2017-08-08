@@ -113,7 +113,7 @@ def getMean(tree):
     return (tree['left']+tree['right'])/2.0
 
 
-def prune(tree, testData):
+def regPrune(tree, testData):
     if shape(testData)[0] == 0:
         print("塌陷！")
         return getMean(tree)
@@ -121,9 +121,9 @@ def prune(tree, testData):
     # 还有子节点就向下递归
     # if isTree(tree['left']) or isTree(tree['right']):
     if isTree(tree['left']):
-        tree['left'] = prune(tree['left'], lSet)
+        tree['left'] = regPrune(tree['left'], lSet)
     if isTree(tree['right']):
-        tree['right'] = prune(tree['right'], rSet)
+        tree['right'] = regPrune(tree['right'], rSet)
     # 左右都是子节点的时候，
     if not isTree(tree['left']) and not isTree(tree['right']):
         errorNoMerge = sum(power(lSet[:, -1]-tree['left'], 2)) + sum(power(rSet[:, -1]-tree['right'], 2))
@@ -176,8 +176,48 @@ def modelError(data):
     return sum(power(Y-yHat, 2))
 
 
-data = array(loadDataSet("exp2.txt"), float)
-tree = createTree(data, leafType=modelLeaf, errType=modelError, ops=(1, 10))
-print(tree)
-# prune(tree, array(loadDataSet("ex2test.txt")))
+# data = array(loadDataSet("exp2.txt"), float)
+# tree = createTree(data, leafType=modelLeaf, errType=modelError, ops=(1, 10))
 # print(tree)
+
+
+def regTreeEval(model, inDat):
+    return float(model)
+
+
+def modelTreeval(model, inDat):
+    n = shape(inDat)[1]
+    X = mat(ones((1,n+1)))
+    X[:,1:n+1] = inDat
+    # 获得设计矩阵
+    return float(X*model)
+
+
+def treeForeCast(tree, inData, modelEval=regTreeEval):
+    if not isTree(tree):
+        return modelEval(tree, inData)
+    if inData[tree['spInd']] > tree['spVal']:
+        if isTree(tree['left']):
+            return treeForeCast(tree['left'], inData, modelEval)
+        else:
+            return modelEval(tree['left'], inData)
+    else:
+        if isTree(tree['right']):
+            return treeForeCast(tree['right'], inData, modelEval)
+        else:
+            return modelEval(tree['right'], inData)
+
+
+def createForeCast(tree, testData, modelEval=regTreeEval):
+    m = len(testData)
+    yHat = mat(zeros((m,1)))
+    for i in range(m):
+        yHat[i,0] = treeForeCast(tree, mat(testData[i]), modelEval)
+    return yHat
+
+
+trainMat = array(loadDataSet('bikeSpeedVsIq_train.txt'))
+testMat = array(loadDataSet('bikeSpeedVsIq_test.txt'))
+myTree = createTree(trainMat, ops=(1, 20))
+yHat = createForeCast(myTree, testMat[:, 0])
+print(corrcoef(yHat, testMat[:, 1], rowvar=False)[0, 1])
